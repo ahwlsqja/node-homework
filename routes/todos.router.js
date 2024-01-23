@@ -63,15 +63,28 @@ router.get('/todos', async (req, res, next) => {
 
 router.get('/todos/:todoId', async (req, res, next) => {
     // 1. 상세 목록 조회를 진행한다.
+    try{
     const { todoId } = req.params;
     const todos = await Todo.findById(todoId).exec();
+    
+    if (!product){
+      return res.status(404).json({ message: "상품 조회에 실패하였습니다. "});
+    }
   
     // 2. 해야할 일 목록 조회 결과를 클라이언트에게 반환한다.
     return res.status(200).json({ todos });
+  }catch(error){
+    res.status(500).json({ message: "예기치 못한 에러가 발생하였습니다."});
+  }
   });
 
 /** 해야할 일 순서 변경, 완료 / 해제, 내용 변경 API*/
 router.patch('/todos/:todoId', async (req, res, next) => {
+  try{
+    if(! req.body || !req.params){
+      return res.status(400).json({ message: "데이터 형식이 올바르지 않습니다." });
+    }
+
   const { todoId } = req.params;
   const { title ,password, status, content, done } = req.body;
 
@@ -79,8 +92,12 @@ router.patch('/todos/:todoId', async (req, res, next) => {
   const currentTodo = await Todo.findById(todoId).exec();
   if (currentTodo.password !== password) {
     return res
-      .status(404)
+      .status(401)
       .json({ errorMessage: '존재하지 않는 비밀번호입니다.' });
+  }
+
+  if(!currentTodo){
+    return res.status(404).json({ message: "상품 조회에 실패하였습니다." });
   }
 
   if (done !== undefined) {
@@ -94,10 +111,18 @@ router.patch('/todos/:todoId', async (req, res, next) => {
   await currentTodo.save();
 
   return res.status(200).json({});
+}catch(error){
+  res.status(500).json({ message: "예기치 못한 에러가 발생하였습니다." })
+}
 });
 
 //** 물건 삭제 API * */
 router.delete('/todos/:todoId', async (req, res, next) => {
+  try{
+    if(! req.body || !req.params){
+      return res.status(400).json({ message: "데이터 형식이 올바르지 않습니다." });
+    }
+
   const { todoId } = req.params;
   const { password } = req.body;
   const todo = await Todo.findById(todoId).exec();
@@ -108,12 +133,15 @@ router.delete('/todos/:todoId', async (req, res, next) => {
   }
   if (todo.password !== password) {
     return res
-      .status(404)
+      .status(401)
       .json({ errorMessage: '비밀번호가 틀렸습니다.' });
   }
 
   await Todo.deleteOne({ _id: todoId });
 
   return res.status(200).json({});
+}catch(error){
+  res.status(500).json({ message: "예기치 못한 에러가 발생하였습니다." })
+}
 });
 export default router;
