@@ -5,9 +5,9 @@ import mongoose from 'mongoose';
 const connect = () => {
   mongoose
     .connect(
-      'mongodb+srv://sparta-user:aaaa4321@express-mongo.8t2aaps.mongodb.net/?retryWrites=true&w=majority',
+      process.env.MONGODB_URI,
       {
-        dbName: 'todo', // todo_memo 데이터베이스명을 사용합니다.
+        dbName: process.env.DB_NAME, // todo_memo 데이터베이스명을 사용합니다.
       }
     )
     .then(() => console.log('MongoDB 연결에 성공하였습니다.'))
